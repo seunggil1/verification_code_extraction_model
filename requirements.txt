@@ -1,0 +1,10 @@
+transformers
+accelerate
+bitsandbytes
+peft
+datasets
+pandas
+huggingface_hub
+
+# tflite
+mediapipe
