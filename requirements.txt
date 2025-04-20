@@ -5,6 +5,8 @@ peft
 datasets
 pandas
 huggingface_hub
+numpy
+deepspeed>=0.9.3
 
 # tflite
 mediapipe

@@ -1,23 +1,39 @@
 import os
 
+import torch
 from datasets import load_dataset
-from huggingface_hub import login
-from transformers import AutoTokenizer, Gemma3ForCausalLM
+from huggingface_hub import login, logout
+from transformers import AutoTokenizer, Gemma2ForCausalLM
 from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
+from huggingface_hub import hf_hub_download
+import json
 
-model_id = "google/gemma-3-1b-it"
-repo_id = "sg2023/Gemma3-1B-IT-Sms-Verification_Code_Extraction"
+model_id = "google/gemma-2-2b-it"
+repo_id = "sg2023/Gemma2-2B-IT-Sms-Verification_Code_Extraction"
+
+hf_token = os.environ["HF_TOKEN"]
+
+login(token=hf_token)
+
 ds = load_dataset(
     "csv",
     data_files={"train": "train.csv", "test": "test.csv"},
     column_names=["sms_body", "code"],
 )["train"]
-hf_token = os.environ["hf_token"]
 
-model = Gemma3ForCausalLM.from_pretrained(model_id, attn_implementation="eager")
-
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=True)
 tokenizer.pad_token = tokenizer.eos_token
+
+model = Gemma2ForCausalLM.from_pretrained(
+    model_id,
+    device_map="auto",  # 자동으로 GPU↔CPU 파라미터 분산
+    torch_dtype=torch.bfloat16,  # BF16 로드
+    offload_folder="offload",  # CPU 오프로딩 폴더
+    offload_state_dict=True,
+    attn_implementation="eager"
+)
+with open("deepspeed_config.json") as f:
+    deep_speed_config = json.load(f)
 
 
 def preprocess(row):
@@ -36,14 +52,17 @@ tokenized_ds = ds.map(preprocess, batched=False)
 
 training_args = TrainingArguments(
     output_dir=model_id,
-    per_device_train_batch_size=4,
-    gradient_accumulation_steps=4,
+    per_device_train_batch_size=1,
+    gradient_accumulation_steps=16,
     num_train_epochs=3,
     learning_rate=5e-5,
-    fp16=True,
+    fp16=False,
+    bf16=True,
     logging_steps=50,
     save_steps=500,
-    save_total_limit=2
+    save_total_limit=2,
+    deepspeed=deep_speed_config,
+    gradient_checkpointing=True
 )
 
 data_collator = DataCollatorForSeq2Seq(tokenizer, pad_to_multiple_of=8)
@@ -60,7 +79,6 @@ trainer.save_model(f"{model_id}/final")
 
 print("Training finished")
 
-login(token=hf_token)
 model.push_to_hub(repo_id, use_auth_token=True)
 tokenizer.push_to_hub(repo_id, use_auth_token=True)
 
