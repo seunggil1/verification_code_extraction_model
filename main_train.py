@@ -1,12 +1,11 @@
+import json
 import os
 
 import torch
 from datasets import load_dataset
-from huggingface_hub import login, logout
+from huggingface_hub import login
 from transformers import AutoTokenizer, Gemma2ForCausalLM
 from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
-from huggingface_hub import hf_hub_download
-import json
 
 model_id = "google/gemma-2-2b-it"
 repo_id = "sg2023/Gemma2-2B-IT-Sms-Verification_Code_Extraction"
