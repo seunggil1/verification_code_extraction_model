@@ -8,7 +8,11 @@ datasets
 pandas
 huggingface_hub
 numpy
-deepspeed>=0.9.3
+# deepspeed>=0.9.3 only nvidia-gpu
 
 # tflite
 mediapipe
+
+
+# gpt
+openai
