@@ -1,13 +1,13 @@
-from transformers import Gemma3ForCausalLM, AutoTokenizer
+from transformers import Gemma2ForCausalLM, AutoTokenizer
 import pandas as pd
 import os
 
 hf_token = os.environ["hf_token"]
 
-model_id = "sg2023/Gemma3-1B-IT-Sms-Verification_Code_Extraction"
-tokenizer = AutoTokenizer.from_pretrained(model_id, token=hf_token)
+repo_id = "sg2023/Gemma2-2B-IT-Sms-Verification_Code_Extraction"
+tokenizer = AutoTokenizer.from_pretrained(repo_id, token=hf_token)
 
-tuned = Gemma3ForCausalLM.from_pretrained(model_id, token=hf_token)
+tuned = Gemma2ForCausalLM.from_pretrained(repo_id, token=hf_token)
 tuned.eval()
 
 df = pd.read_csv("test.csv")
