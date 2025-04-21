@@ -9,10 +9,10 @@ df_exclude_code = df[df['인증번호'] == 0]
 
 
 # sampling 100 rows
-df_include_code_sample = df_include_code.sample(n=80, random_state=42)
+df_include_code_sample = df_include_code.sample(n=20, random_state=42)
 df_include_code_rest = df_include_code.drop(df_include_code_sample.index)
 
-df_exclude_code_sample = df_exclude_code.sample(n=20, random_state=42)
+df_exclude_code_sample = df_exclude_code.sample(n=80, random_state=42)
 df_exclude_code_rest = df_exclude_code.drop(df_exclude_code_sample.index)
 
 
