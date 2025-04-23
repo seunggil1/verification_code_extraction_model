@@ -21,7 +21,6 @@ ds = load_dataset(
 )["train"]
 
 tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=True)
-tokenizer.pad_token = tokenizer.eos_token
 
 model = Gemma2ForCausalLM.from_pretrained(
     model_id,
@@ -36,15 +35,24 @@ with open("deepspeed_config.json") as f:
 
 
 def preprocess(row):
-    prompt = row["sms_body"]
+    request = row["sms_body"]
     response = str(int(row["code"]))
-    enc = tokenizer(
-        prompt + tokenizer.eos_token + response + tokenizer.eos_token,
-        truncation=True,
-        max_length=512
-    )
-    enc["labels"] = enc["input_ids"].copy()
-    return enc
+
+    request_template = [{"role": "user", "content": request}]
+    response_template = [{"role": "model", "content": response}]
+
+    prompt = tokenizer.apply_chat_template(request_template + response_template, tokenize=False, add_generation_prompt=False) + tokenizer.eos_token
+    encode_prompt = tokenizer(prompt, truncation=True, max_length=512)
+
+    input_ids = encode_prompt["input_ids"]
+    resp_ids = tokenizer(response + prompt.split(response)[-1], add_special_tokens=False)["input_ids"]
+
+    labels = [-100] * (len(input_ids) - len(resp_ids)) + resp_ids
+    labels = [l if l != tokenizer.pad_token_id else -100 for l in labels]
+
+    encode_prompt["labels"] = labels
+
+    return encode_prompt
 
 
 tokenized_ds = ds.map(preprocess, batched=False)
