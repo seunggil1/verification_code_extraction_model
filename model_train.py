@@ -27,7 +27,7 @@ def main(args):
         device_map="auto",  # 자동으로 GPU↔CPU 파라미터 분산
         offload_folder="offload",  # CPU 오프로딩 폴더
         offload_state_dict=True,
-        attn_implementation="eager"
+        attn_implementation="eager",
     )
     model.gradient_checkpointing_enable()
 
@@ -38,12 +38,20 @@ def main(args):
         request_template = [{"role": "user", "content": request}]
         response_template = [{"role": "model", "content": response}]
 
-        prompt = tokenizer.apply_chat_template(request_template + response_template, tokenize=False,
-                                               add_generation_prompt=False) + tokenizer.eos_token
+        prompt = (
+            tokenizer.apply_chat_template(
+                request_template + response_template,
+                tokenize=False,
+                add_generation_prompt=False,
+            )
+            + tokenizer.eos_token
+        )
         encode_prompt = tokenizer(prompt, truncation=True, max_length=512)
 
         input_ids = encode_prompt["input_ids"]
-        resp_ids = tokenizer(response + prompt.split(response)[-1], add_special_tokens=False)["input_ids"]
+        resp_ids = tokenizer(
+            response + prompt.split(response)[-1], add_special_tokens=False
+        )["input_ids"]
 
         labels = [-100] * (len(input_ids) - len(resp_ids)) + resp_ids
         labels = [l if l != tokenizer.pad_token_id else -100 for l in labels]
@@ -52,8 +60,8 @@ def main(args):
 
         return encode_prompt
 
-    ds['train'] = ds['train'].map(preprocess, batched=False)
-    ds['test'] = ds['test'].map(preprocess, batched=False)
+    ds["train"] = ds["train"].map(preprocess, batched=False)
+    ds["test"] = ds["test"].map(preprocess, batched=False)
     # ds['train'] = ds['train'].select(range(10))
     # ds['test'] = ds['test'].select(range(10))
 
@@ -82,7 +90,7 @@ def main(args):
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         greater_is_better=False,
-        report_to="none"
+        report_to="none",
     )
 
     data_collator = DataCollatorForSeq2Seq(tokenizer, pad_to_multiple_of=8)
@@ -90,9 +98,9 @@ def main(args):
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=ds['train'],
-        eval_dataset=ds['test'],
-        data_collator=data_collator
+        train_dataset=ds["train"],
+        eval_dataset=ds["test"],
+        data_collator=data_collator,
     )
 
     trainer.train()
@@ -101,7 +109,7 @@ def main(args):
     print("Training finished")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--train_dataset", type=str, default="./train.csv")
     argparser.add_argument("--test_dataset", type=str, default="./test.csv")

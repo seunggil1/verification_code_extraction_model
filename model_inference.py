@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from transformers import Gemma2ForCausalLM, AutoTokenizer
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     hf_token = os.environ["hf_token"]
 
     repo_id = "sg2023/Gemma2-2B-IT-Sms-Verification_Code_Extraction"
@@ -20,8 +20,12 @@ if __name__ == '__main__':
         prompt = row.iloc[0]
         response = str(row.iloc[1])
         request_template = [{"role": "user", "content": prompt}]
-        response_template = tokenizer.apply_chat_template(request_template, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(response_template, return_tensors="pt").to(tuning_model.device)
+        response_template = tokenizer.apply_chat_template(
+            request_template, tokenize=False, add_generation_prompt=True
+        )
+        inputs = tokenizer(response_template, return_tensors="pt").to(
+            tuning_model.device
+        )
         input_ids = inputs["input_ids"][0]  # Tensor shape: (seq_len,)
         input_len = input_ids.shape[0]
 
@@ -30,7 +34,9 @@ if __name__ == '__main__':
         outputs = tokenizer.decode(outputs, skip_special_tokens=True)
 
         if response != outputs:
-            print(f"Wrong prediction :: \n {prompt} \n\n Expected: {response} / Got: {outputs}")
+            print(
+                f"Wrong prediction :: \n {prompt} \n\n Expected: {response} / Got: {outputs}"
+            )
             incorrect += 1
         else:
             print(f"Correct : {response}")

@@ -3,7 +3,7 @@ import os
 from huggingface_hub import login, create_tag
 from transformers import Gemma2ForCausalLM, AutoTokenizer
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     hf_token = os.environ["hf_token"]
 
     login(token=hf_token, add_to_git_credential=True)
