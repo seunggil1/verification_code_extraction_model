@@ -1,13 +1,12 @@
 import json
 import os
 
-import torch
 from datasets import load_dataset
 from huggingface_hub import login
 from transformers import AutoTokenizer, Gemma2ForCausalLM
 from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
 
-model_id = "google/gemma-2-2b-it"
+model_id = "google/Gemma2-2B-IT-Sms-Verification_Code_Extraction"
 repo_id = "sg2023/Gemma2-2B-IT-Sms-Verification_Code_Extraction"
 
 hf_token = os.environ["HF_TOKEN"]
@@ -18,20 +17,18 @@ ds = load_dataset(
     "csv",
     data_files={"train": "train.csv", "test": "test.csv"},
     column_names=["sms_body", "code"],
-)["train"]
+)
 
-tokenizer = AutoTokenizer.from_pretrained(model_id, use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir="")
 
 model = Gemma2ForCausalLM.from_pretrained(
     model_id,
     device_map="auto",  # 자동으로 GPU↔CPU 파라미터 분산
-    torch_dtype=torch.bfloat16,  # BF16 로드
     offload_folder="offload",  # CPU 오프로딩 폴더
     offload_state_dict=True,
     attn_implementation="eager"
 )
-with open("deepspeed_config.json") as f:
-    deep_speed_config = json.load(f)
+model.gradient_checkpointing_enable()
 
 
 def preprocess(row):
@@ -41,7 +38,8 @@ def preprocess(row):
     request_template = [{"role": "user", "content": request}]
     response_template = [{"role": "model", "content": response}]
 
-    prompt = tokenizer.apply_chat_template(request_template + response_template, tokenize=False, add_generation_prompt=False) + tokenizer.eos_token
+    prompt = tokenizer.apply_chat_template(request_template + response_template, tokenize=False,
+                                           add_generation_prompt=False) + tokenizer.eos_token
     encode_prompt = tokenizer(prompt, truncation=True, max_length=512)
 
     input_ids = encode_prompt["input_ids"]
@@ -55,21 +53,37 @@ def preprocess(row):
     return encode_prompt
 
 
-tokenized_ds = ds.map(preprocess, batched=False)
+ds['train'] = ds['train'].map(preprocess, batched=False)
+ds['test'] = ds['test'].map(preprocess, batched=False)
+# ds['train'] = ds['train'].select(range(10))
+# ds['test'] = ds['test'].select(range(10))
+
+with open("deepspeed_config.json") as f:
+    deep_speed_config = json.load(f)
 
 training_args = TrainingArguments(
     output_dir=model_id,
-    per_device_train_batch_size=1,
-    gradient_accumulation_steps=16,
-    num_train_epochs=3,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,
+    num_train_epochs=2,
     learning_rate=5e-5,
-    fp16=False,
-    bf16=True,
-    logging_steps=50,
-    save_steps=500,
-    save_total_limit=2,
+    fp16=True,
+    bf16=False,
+    eval_strategy="steps",
+    save_strategy="steps",
+    logging_steps=100,
+    save_steps=100,
+    save_total_limit=1,
+    save_only_model=True,
+    save_safetensors=True,
     deepspeed=deep_speed_config,
-    gradient_checkpointing=True
+    gradient_checkpointing=True,
+    do_train=True,
+    do_eval=True,
+    load_best_model_at_end=True,
+    metric_for_best_model="eval_loss",
+    greater_is_better=False,
+    report_to="none"
 )
 
 data_collator = DataCollatorForSeq2Seq(tokenizer, pad_to_multiple_of=8)
@@ -77,7 +91,8 @@ data_collator = DataCollatorForSeq2Seq(tokenizer, pad_to_multiple_of=8)
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=tokenized_ds,
+    train_dataset=ds['train'],
+    eval_dataset=ds['test'],
     data_collator=data_collator
 )
 
