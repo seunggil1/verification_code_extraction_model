@@ -2,7 +2,7 @@ import argparse
 import json
 import os
 
-from datasets import load_dataset
+from datasets import load_dataset, Features, Value
 from huggingface_hub import login
 from transformers import AutoTokenizer, Gemma2ForCausalLM
 from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
@@ -14,10 +14,13 @@ def main(args):
     hf_token = os.environ["HF_TOKEN"]
     login(token=hf_token, add_to_git_credential=True)
 
+    features = Features({"sms_body": Value("string"), "code": Value("string")})
+
     ds = load_dataset(
         "csv",
         data_files={"train": args.train_dataset, "test": args.test_dataset},
         column_names=["sms_body", "code"],
+        features=features,
     )
 
     tokenizer = AutoTokenizer.from_pretrained(model_id)
