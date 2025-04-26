@@ -1,6 +1,7 @@
 ## Verification code extraction model
 - SMS에서 인증번호를 추출 하기 위한 Gemma2 SFT 모델
 
+### Example
 - `"본인인증번호는 315611 입니다. 정확히 입력해주세요."` -> `315611`
 - `"안녕하세요"` -> `0`
 
