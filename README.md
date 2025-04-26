@@ -29,7 +29,6 @@ print(outputs)  # 315611
 
 ### Huggingface Repo
   - https://huggingface.co/sg2023/Gemma2-2B-IT-Sms-Verification_Code_Extraction
-  - 
   - Quantization for mobile
     - 모바일 앱에서 사용하기 위한 Quantization 모델
     - https://huggingface.co/sg2023/Gemma2-2B-IT-Sms-Verification_Code_Extraction-int8-tflite
@@ -37,6 +36,8 @@ print(outputs)  # 315611
 ### Install
 
 ```shell
+pre-commit install
+
 pip install -r requirements.txt
 pip install -r requirements_train.txt (required cuda gpu)
 ```
@@ -45,7 +46,7 @@ pip install -r requirements_train.txt (required cuda gpu)
 
 #### 1. 환경 변수 설정
 - `HF_TOKEN` : Huggingface Token, Gemma2 모델 다운로드, 모델 결과 업로드를 위한 인증 토큰
-  - Huggingface에서 Gemma2 권한을 부여 받아야 합니다. 
+  - Huggingface에서 Gemma2 권한을 부여 받아야 합니다.
 - `OPENAI_API_KEY` : OpenAI API Key, OpenAI API 사용을 위한 인증 키
 
 ```shell
