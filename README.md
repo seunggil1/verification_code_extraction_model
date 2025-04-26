@@ -27,6 +27,20 @@ outputs = tokenizer.decode(outputs, skip_special_tokens=True)
 print(outputs)  # 315611
 ```
 
+### Table of Contents
+- [Verification code extraction model](#verification-code-extraction-model)
+   * [Huggingface Repo](#huggingface-repo)
+   * [Install](#install)
+   * [Development](#development)
+      + [1. 환경 변수 설정](#1-)
+      + [2. Dataset 준비](#2-dataset-)
+      + [3. train / test 데이터 분리](#3-train-test-)
+      + [4. 모델 학습](#4-)
+      + [5. 모델 업로드](#5-)
+      + [6. 모델 평가](#6-)
+      + [7. quantization (Only Linux)](#7-quantization-only-linux)
+      + [8. 모델 변환 (Only Linux)](#8-only-linux)
+
 
 ### Huggingface Repo
   - https://huggingface.co/sg2023/Gemma2-2B-IT-Sms-Verification_Code_Extraction
