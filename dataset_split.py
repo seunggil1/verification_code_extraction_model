@@ -5,17 +5,15 @@ import pandas as pd
 
 def main(args):
     required_column = {"Body", "인증번호"}
-    df = pd.read_csv(args.input_csv_file_path, encoding="utf-8")
+    df = pd.read_csv(args.input_csv_file_path, encoding="utf-8", dtype=str)
 
     if not required_column.issubset(df.columns):
         raise ValueError(
             f"Input CSV file must contain the following columns: {required_column}"
         )
 
-    df["인증번호"] = df["인증번호"].apply(lambda x: int(x))
-
-    df_include_code = df[df["인증번호"] != 0]
-    df_exclude_code = df[df["인증번호"] == 0]
+    df_include_code = df[df["인증번호"] != "0"]
+    df_exclude_code = df[df["인증번호"] == "0"]
 
     # sampling 100 rows
     df_include_code_sample = df_include_code.sample(
@@ -33,8 +31,8 @@ def main(args):
     df_test = pd.concat([df_include_code_sample, df_exclude_code_sample])
 
     # save to csv without header
-    df_train.to_csv(f"{args.output_csv_file_path}/train.csv", index=False, header=False)
-    df_test.to_csv(f"{args.output_csv_file_path}/test.csv", index=False, header=False)
+    df_train.to_csv(f"{args.output_csv_file_dir}/train.csv", index=False, header=False)
+    df_test.to_csv(f"{args.output_csv_file_dir}/test.csv", index=False, header=False)
 
 
 if __name__ == "__main__":
