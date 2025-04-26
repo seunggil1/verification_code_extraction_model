@@ -7,6 +7,3 @@ transformers
 peft
 datasets
 huggingface_hub
-
-# git
-pre-commit
