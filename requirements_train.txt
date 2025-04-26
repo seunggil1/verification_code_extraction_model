@@ -1,0 +1,14 @@
+# model accelerate
+torch
+mpi4py
+accelerate
+deepspeed>=0.9.3 # only nvidia-gpu
+pyarrow
+
+# tflite
+mediapipe
+ai_edge_torch
+sentencepiece
+
+
+

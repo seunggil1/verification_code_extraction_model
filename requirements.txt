@@ -1,18 +1,12 @@
-torch
+# data
+pandas
+openai
 
+# huggingface
 transformers
-accelerate
-bitsandbytes
 peft
 datasets
-pandas
 huggingface_hub
-numpy
-# deepspeed>=0.9.3 only nvidia-gpu
 
-# tflite
-mediapipe
-
-
-# gpt
-openai
+# git
+pre-commit
