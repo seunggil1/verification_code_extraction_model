@@ -20,7 +20,7 @@ def main(args):
         column_names=["sms_body", "code"],
     )
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir="")
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
 
     model = Gemma2ForCausalLM.from_pretrained(
         model_id,
