@@ -9,7 +9,7 @@ from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
 
 
 def main(args):
-    model_id = "google/Gemma2-2B-IT-Sms-Verification_Code_Extraction"
+    model_id = "google/gemma-2-2b-it"
 
     hf_token = os.environ["HF_TOKEN"]
     login(token=hf_token, add_to_git_credential=True)
