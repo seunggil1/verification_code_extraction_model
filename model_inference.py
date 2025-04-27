@@ -11,14 +11,14 @@ if __name__ == "__main__":
     tuning_model = Gemma2ForCausalLM.from_pretrained(repo_id, token=hf_token)
     tuning_model.eval()
 
-    df = pd.read_csv("test.csv")
+    df = pd.read_csv("test.csv", encoding="utf-8", dtype=str)
 
     correct = 0
     incorrect = 0
 
     for index, row in df.iterrows():
         prompt = row.iloc[0]
-        response = str(row.iloc[1])
+        response = row.iloc[1]
         request_template = [{"role": "user", "content": prompt}]
         response_template = tokenizer.apply_chat_template(
             request_template, tokenize=False, add_generation_prompt=True
