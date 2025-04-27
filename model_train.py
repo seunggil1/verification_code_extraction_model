@@ -84,7 +84,6 @@ def main(args):
         logging_steps=100,
         save_steps=100,
         save_total_limit=1,
-        save_only_model=True,
         save_safetensors=True,
         deepspeed=deep_speed_config,
         gradient_checkpointing=True,
