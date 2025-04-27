@@ -36,7 +36,7 @@ def main(args):
 
     def preprocess(row):
         request = row["sms_body"]
-        response = str(int(row["code"]))
+        response = str(row["code"])
 
         request_template = [{"role": "user", "content": request}]
         response_template = [{"role": "model", "content": response}]
