@@ -1,15 +1,21 @@
 import argparse
 import json
 import os
+from statistics import mean
 
+import torch
 from datasets import load_dataset, Features, Value
 from huggingface_hub import login
-from transformers import AutoTokenizer, Gemma2ForCausalLM
+from transformers import AutoTokenizer, Gemma3ForCausalLM
 from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
 
 
+def avg_len(dataset):
+    return mean(len(ex["input_ids"]) for ex in dataset)
+
 def main(args):
-    model_id = "google/gemma-2-2b-it"
+    model_id = "google/gemma-3-270m-it"
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     hf_token = os.environ["HF_TOKEN"]
     login(token=hf_token, add_to_git_credential=True)
@@ -22,17 +28,18 @@ def main(args):
         column_names=["sms_body", "code"],
         features=features,
     )
-
     tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-    model = Gemma2ForCausalLM.from_pretrained(
+    model = Gemma3ForCausalLM.from_pretrained(
         model_id,
+        torch_dtype="bfloat16",
         device_map="auto",  # 자동으로 GPU↔CPU 파라미터 분산
-        offload_folder="offload",  # CPU 오프로딩 폴더
-        offload_state_dict=True,
-        attn_implementation="eager",
+        # offload_folder="offload",  # CPU 오프로딩 폴더
+        # offload_state_dict=True,
+        # attn_implementation="eager",
     )
     model.gradient_checkpointing_enable()
+    model.to(device)
 
     def preprocess(row):
         request = row["sms_body"]
@@ -68,17 +75,17 @@ def main(args):
     # ds['train'] = ds['train'].select(range(10))
     # ds['test'] = ds['test'].select(range(10))
 
-    with open("deepspeed_config.json") as f:
+    with open("deepspeed_config_stage2.json") as f:
         deep_speed_config = json.load(f)
 
     training_args = TrainingArguments(
         output_dir=model_id,
-        per_device_train_batch_size=16,
-        gradient_accumulation_steps=1,
+        per_device_train_batch_size=32,
+        gradient_accumulation_steps=8,
         num_train_epochs=2,
         learning_rate=5e-5,
-        fp16=True,
-        bf16=False,
+        fp16=False,
+        bf16=True,
         eval_strategy="steps",
         save_strategy="steps",
         logging_steps=100,
