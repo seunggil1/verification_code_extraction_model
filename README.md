@@ -120,6 +120,7 @@ python model_inference.py
 
 
 #### 7. quantization (Only Linux)
+- https://ai.google.dev/gemma/docs/conversions/hf-to-mediapipe-task?hl=ko
 ```shell
 # source .venv/bin/activate
 pip install --upgrade "jax==0.4.34" "jaxlib==0.4.34" ai_edge_torch==0.4.* mediapipe==0.10.* sentencepiece --no-cache-dir
