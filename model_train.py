@@ -6,7 +6,7 @@ from statistics import mean
 import torch
 from datasets import load_dataset, Features, Value
 from huggingface_hub import login
-from transformers import AutoTokenizer, Gemma3ForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from transformers import Trainer, TrainingArguments, DataCollatorForSeq2Seq
 
 
@@ -30,10 +30,10 @@ def main(args):
     )
     tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-    model = Gemma3ForCausalLM.from_pretrained(
+    model = AutoModelForCausalLM.from_pretrained(
         model_id,
         torch_dtype="bfloat16",
-        device_map="auto",  # 자동으로 GPU↔CPU 파라미터 분산
+        # device_map="auto",  # 자동으로 GPU↔CPU 파라미터 분산
         # offload_folder="offload",  # CPU 오프로딩 폴더
         # offload_state_dict=True,
         # attn_implementation="eager",
@@ -75,14 +75,14 @@ def main(args):
     # ds['train'] = ds['train'].select(range(10))
     # ds['test'] = ds['test'].select(range(10))
 
-    with open("deepspeed_config_stage2.json") as f:
-        deep_speed_config = json.load(f)
+    # with open("deepspeed_config_stage2.json") as f:
+    #     deep_speed_config = json.load(f)
 
     training_args = TrainingArguments(
         output_dir=model_id,
-        per_device_train_batch_size=32,
-        gradient_accumulation_steps=8,
-        num_train_epochs=2,
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=64,
+        num_train_epochs=5,
         learning_rate=5e-5,
         fp16=False,
         bf16=True,
@@ -92,7 +92,7 @@ def main(args):
         save_steps=100,
         save_total_limit=1,
         save_safetensors=True,
-        deepspeed=deep_speed_config,
+        # deepspeed=deep_speed_config,
         gradient_checkpointing=True,
         do_train=True,
         do_eval=True,
