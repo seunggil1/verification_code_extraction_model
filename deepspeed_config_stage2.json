@@ -1,0 +1,11 @@
+{
+  "train_batch_size": 256,
+  "train_micro_batch_size_per_gpu": 32,
+  "gradient_accumulation_steps": 8,
+  "zero_optimization": {
+    "stage": 2,
+    "contiguous_gradients": true
+  },
+  "bf16": { "enabled": true },
+  "fp16": { "enabled": false }
+}
