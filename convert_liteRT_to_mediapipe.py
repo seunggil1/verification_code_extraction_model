@@ -1,6 +1,6 @@
 from mediapipe.tasks.python.genai import bundler
 config = bundler.BundleConfig(
-    tflite_model="./models/gemma3-270m-it-sms-verification_code_extraction/sms_verification_code_extraction_q8_ekv4096.tflite",
+    tflite_model="./models/gemma3-270m-it-sms-verification_code_extraction/sms_verification_code_extraction_fp16_ekv2048.tflite",
     tokenizer_model="./models/gemma3-270m-it-sms-verification_code_extraction/tokenizer.model",
     start_token="<bos>",
     stop_tokens=["<eos>", "<end_of_turn>"],
