@@ -15,7 +15,7 @@ converter.convert_to_tflite(
     output_name_prefix="sms_verification_code_extraction",
     prefill_seq_len=2048,
     kv_cache_max_len=4096,
-    quantize="dynamic_int8",
+    quantize="fp16",
     export_config=export_config,
 )
 
